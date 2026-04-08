@@ -1,2 +1,10 @@
-*
-!release/
+.git
+.github
+docker
+helm
+k8s
+screenshot
+doc
+tests
+*.md
+netlify.toml
