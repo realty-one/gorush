@@ -27,7 +27,9 @@ jobs:
           key: ${{ secrets.DEV_SSH_PRIVATE_KEY }}
           port: 22
           script: |
+            set -e
+            IMAGE="${{ inputs.tag_commit || 'ghcr.io/realty-one/gorush:latest' }}"
             echo ${{ secrets.GHCR_TOKEN }} | docker login ghcr.io --username ${{ secrets.GHCR_USERNAME }} --password-stdin
-            docker pull ${{ inputs.tag_commit }}
+            docker pull "$IMAGE"
             docker container rm -f dev-gorush || true
-            docker run -d --restart unless-stopped --network="host" --env-file=/etc/dev.realty.one/gorush/.env -v /etc/dev.realty.one/gorush/clickhom-aecd2-firebase-adminsdk-fbsvc-b375ac3b60.json:/mnt/clickhom-aecd2-firebase-adminsdk-fbsvc-b375ac3b60.json -p 127.0.0.1:8088:8088 --name dev-gorush ${{inputs.tag_commit}}
+            docker run -d --restart unless-stopped --network="host" --env-file=/etc/dev.realty.one/gorush/.env -v /etc/dev.realty.one/gorush/clickhom-aecd2-firebase-adminsdk-fbsvc-b375ac3b60.json:/mnt/clickhom-aecd2-firebase-adminsdk-fbsvc-b375ac3b60.json -p 127.0.0.1:8088:8088 --name dev-gorush "$IMAGE"
