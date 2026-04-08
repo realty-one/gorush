@@ -14,20 +14,25 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Print envs
-        run: |
-          echo ${{inputs.tag_commit}}
-          echo ${{inputs.tag_latest}}
+    - name: Print envs
+      run: |
+        echo ${{inputs.tag_commit}}
+        echo ${{inputs.tag_latest}}
 
-      - name: SSH and deploy to services
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.DEV_HOST_IP }}
-          username: ${{ secrets.DEV_SSH_USER }}
-          key: ${{ secrets.DEV_SSH_PRIVATE_KEY }}
-          port: 22
-          script: |
-            docker login --username oauth --password ${{ secrets.REGISTRY_TOKEN }} cr.yandex
-            docker pull ${{ inputs.tag_commit }}
-            docker container rm -f dev-gorush || true
-            docker run -d --restart unless-stopped --network="host" --env-file=/etc/dev.clickhom.ru/gorush/.env -v /etc/dev.clickhom.ru/gorush/AuthKey_BC5ZCPRTWA.p8:/mnt/AuthKey_BC5ZCPRTWA.p8 -v /etc/dev.clickhom.ru/gorush/clickhom-aecd2-firebase-adminsdk-fbsvc-b375ac3b60.json:/mnt/clickhom-aecd2-firebase-adminsdk-fbsvc-b375ac3b60.json -p 127.0.0.1:8088:8088 --name dev-gorush ${{inputs.tag_commit}}
+    - name: SSH and deploy
+      uses: appleboy/ssh-action@v1.2.0
+      with:
+        host: ${{ secrets.DEV_HOST_IP }}
+        username: ${{ secrets.DEV_SSH_USER }}
+        key: ${{ secrets.DEV_SSH_PRIVATE_KEY }}
+        port: 22
+        script: |
+          echo ${{ secrets.GHCR_TOKEN }} | docker login ghcr.io --username ${{ secrets.GHCR_USERNAME }} --password-stdin
+          docker pull ${{ inputs.tag_commit }}
+          docker container rm -f dev-gorush || true
+          docker run -d --restart unless-stopped --network="host" \
+            --env-file=/etc/dev.clickhom.ru/gorush/.env \
+            -v /etc/dev.clickhom.ru/gorush/AuthKey_BC5ZCPRTWA.p8:/mnt/AuthKey_BC5ZCPRTWA.p8 \
+            -v /etc/dev.clickhom.ru/gorush/clickhom-aecd2-firebase-adminsdk-fbsvc-b375ac3b60.json:/mnt/clickhom-aecd2-firebase-adminsdk-fbsvc-b375ac3b60.json \
+            --name dev-gorush ${{ inputs.tag_commit }}
+          docker image prune -f
