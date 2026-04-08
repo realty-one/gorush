@@ -5,7 +5,7 @@ RUN apk --no-cache add make git gcc libtool musl-dev ca-certificates libgcc open
 WORKDIR /go/src/app
 COPY . .
 
-RUN go get -d -v ./...
+RUN go mod download
 
 RUN go build -ldflags="-w -s" -o /go/bin/result
 
