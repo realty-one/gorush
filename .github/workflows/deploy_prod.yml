@@ -27,7 +27,9 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           script: |
-            docker login --username oauth --password ${{ secrets.REGISTRY_TOKEN }} cr.yandex
-            docker pull ${{ inputs.tag_commit }}
-            docker container rm -f prod-gorush
-            docker run -d --restart unless-stopped --network="host" --env-file=/etc/clickhom.ru/gorush/.env -v /etc/clickhom.ru/gorush/AuthKey_BC5ZCPRTWA.p8:/mnt/AuthKey_BC5ZCPRTWA.p8 -v /etc/clickhom.ru/gorush/clickhom-aecd2-firebase-adminsdk-fbsvc-b375ac3b60.json:/mnt/clickhom-aecd2-firebase-adminsdk-fbsvc-b375ac3b60.json -p 8088:8088 --name prod-gorush ${{inputs.tag_commit}}
+            set -euo pipefail
+            IMAGE="${{ inputs.tag_commit || 'ghcr.io/realty-one/gorush:latest' }}"
+            echo ${{ secrets.GHCR_TOKEN }} | docker login ghcr.io --username ${{ secrets.GHCR_USERNAME }} --password-stdin
+            docker pull "$IMAGE"
+            docker container rm -f prod-gorush || true
+            docker run -d --restart unless-stopped --network="host" --env-file=/etc/prod.realty.one/gorush/.env -v /etc/prod.realty.one/gorush/clickhom-aecd2-firebase-adminsdk-fbsvc-b375ac3b60.json:/mnt/clickhom-aecd2-firebase-adminsdk-fbsvc-b375ac3b60.json -p 8088:8088 --name prod-gorush "$IMAGE"

@@ -27,8 +27,8 @@ jobs:
           key: ${{ secrets.DEV_SSH_PRIVATE_KEY }}
           port: 22
           script: |
-            set -e
-            IMAGE="${{ inputs.tag_commit || 'ghcr.io/realty-one/gorush:latest' }}"
+            set -euo pipefail
+            IMAGE="${{ inputs.tag_commit || 'ghcr.io/realty-one/gorush:dev-latest' }}"
             echo ${{ secrets.GHCR_TOKEN }} | docker login ghcr.io --username ${{ secrets.GHCR_USERNAME }} --password-stdin
             docker pull "$IMAGE"
             docker container rm -f dev-gorush || true
