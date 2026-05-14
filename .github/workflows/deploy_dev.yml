@@ -32,4 +32,4 @@ jobs:
             echo ${{ secrets.GHCR_TOKEN }} | docker login ghcr.io --username ${{ secrets.GHCR_USERNAME }} --password-stdin
             docker pull "$IMAGE"
             docker container rm -f dev-gorush || true
-            docker run -d --restart unless-stopped --network="host" --env-file=/etc/dev.realty.one/gorush/.env -v /etc/dev.realty.one/gorush/fcm.json:/mnt/fcm.json:ro -p 127.0.0.1:8088:8088 --name dev-gorush "$IMAGE"
+            docker run -d --restart unless-stopped --network="host" --env-file=/etc/dev.realty.one/gorush/.env -v /etc/dev.realty.one/gorush/fcm.json:/mnt/fcm.json:ro -v /etc/dev.realty.one/gorush/apns.p8:/mnt/apns.p8:ro -p 127.0.0.1:8088:8088 --name dev-gorush "$IMAGE"
