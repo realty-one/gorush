@@ -13,6 +13,8 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    permissions:
+      packages: read
     steps:
       - name: Print envs
         run: |
@@ -20,7 +22,7 @@ jobs:
           echo ${{inputs.tag_latest}}
 
       - name: SSH and deploy to services
-        uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.DEV_HOST_IP }}
           username: ${{ secrets.DEV_SSH_USER }}
@@ -29,7 +31,7 @@ jobs:
           script: |
             set -euo pipefail
             IMAGE="${{ inputs.tag_commit || 'ghcr.io/realty-one/gorush:dev-latest' }}"
-            echo ${{ secrets.GHCR_TOKEN }} | docker login ghcr.io --username ${{ secrets.GHCR_USERNAME }} --password-stdin
+            echo "${{ github.token }}" | docker login ghcr.io --username "${{ github.actor }}" --password-stdin
             docker pull "$IMAGE"
             docker container rm -f dev-gorush || true
             docker run -d --restart unless-stopped --network="host" --env-file=/etc/dev.realty.one/gorush/.env -v /etc/dev.realty.one/gorush/fcm.json:/mnt/fcm.json:ro -v /etc/dev.realty.one/gorush/apns.p8:/mnt/apns.p8:ro -p 127.0.0.1:8088:8088 --name dev-gorush "$IMAGE"
