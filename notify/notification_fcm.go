@@ -140,6 +140,13 @@ func GetAndroidNotification(req *PushNotification) []*messaging.Message {
 		}
 	}
 
+	if req.Priority == HIGH {
+		if req.Android == nil {
+			req.Android = &messaging.AndroidConfig{}
+		}
+		req.Android.Priority = "high"
+	}
+
 	var data map[string]string
 	if len(req.Data) > 0 {
 		data = make(map[string]string, len(req.Data))
